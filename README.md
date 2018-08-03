@@ -1,4 +1,4 @@
-# closure-loader
+# closure-global-loader (Fork of [closure-loader](https://github.com/mxmul/closure-loader))
 
 [![npm][npm]][npm-url]
 [![deps][deps]][deps-url]
@@ -8,7 +8,7 @@ This is a Webpack loader which resolves `goog.provide()` and `goog.require()` st
 as if they were regular CommonJS modules.
 
 ## Installation
-```npm install --save-dev closure-loader```
+```npm install --save-dev closure-global-loader```
 
 ## Usage
 [Documentation: Using loaders](https://webpack.js.org/concepts/loaders/#using-loaders)
@@ -18,35 +18,53 @@ and to make a transition to other module systems (CommonJS or ES6) easier.
 
 There are two parts to this loader:
 - `goog.provide()`
-    - Basically just creates the given namespace in the local scope of that module
+    - Basically just creates the given namespace in the codebase if it doesn't already exist.
     - Any file containing this statement will be added to a map for require lookups
 - `goog.require()`
-    - Like `goog.provide()` it creates the given namespace in the scope of that module
+    - Like `goog.provide()` it creates the given namespace in the codebase if it doesn't already exist.
     - It finds the corresponding file with the `goog.provide()` statement and loads it (see configuration below)
-    - It assigns the value of the namespace from the provide file and assign it to the same
-      namespace in the current module
 
 In the simplest way you can just use those two statements like you usually would with Google Closure Tools.
 
 **NOTE**: Usually the Closure compiler simply creates all namespaces on the **global** scope (i.e. the window object).
-This is **not** the case if you use this loader. Every file ("module") has its own scope just like it would have
-if you used CommonJS syntax.
+The original [closure-loader](https://github.com/mxmul/closure-loader) changed this behaviour by creating a local namespace for every file.
+This fork restores the original closure compiler behaviour by creating a single shared namespace.
+This shared namespace is not exposed on the window by default, unless it's already defined, in which case it simply extends the existing namespace as you'd expect with `goog.provide()`.
 
 You can use Closure dependencies in conjunction with CommonJS syntax. You can load any module that uses
 `goog.provide()` with `require()`, but not the other way round.
 
 ```javascript
-// module.js
-goog.provide('my.app.module');
+// moduleA.js
+goog.provide('my.app.moduleA');
 
-my.app.module = function () {
-    console.log('my module was loaded');
+my.app.moduleA = function () {
+    console.log('module A was loaded');
+}
+
+// moduleB.js
+goog.require('my.app.moduleA')
+goog.provide('my.app.moduleB');
+
+my.app.moduleB = function () {
+    console.log('module B was loaded');
 }
 
 // index.js
-var module = require('./module.js').my.app.module;
+require('my.app.moduleB');
 
-module(); // will output 'my module was loaded' to the console
+my.app.moduleB(); // will output 'module B was loaded' to the console
+
+my.app.moduleA(); // will output 'module A was loaded' to the console
+
+var moduelA = require('./moduleA.js').my.app.moduleA;
+moduleA(); // will output 'module A was loaded' to the console
+
+var moduleB = require('./moduleB.js').my.app.moduleB;
+moduleB(); // will output 'module B was loaded' to the console
+
+require('./moduleA.js').my.app === require('./moduleB.js').my.app; // true
+my.app === require('./moduleA.js').my.app // true
 ```
 
 ## ES6 Modules
@@ -141,6 +159,7 @@ plugins: [
 
 ## Authors
 
+* **Joel Kornbluh** - *Created this fork* - [Joel Kornbluh](https://github.com/joel-kornbluh)
 * **Steven Weingärtner** - *Original author & maintainer* - [eXaminator](https://github.com/eXaminator)
 * **Matt Mulder** - *Current maintainer* - [mxmul](https://github.com/mxmul)
 
