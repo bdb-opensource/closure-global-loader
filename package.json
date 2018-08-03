@@ -1,6 +1,6 @@
 {
-  "name": "closure-loader",
-  "version": "0.9.2",
+  "name": "closure-global-loader",
+  "version": "0.0.1",
   "description": "Webpack loader for google closure library dependencies",
   "main": "lib/index.js",
   "scripts": {
@@ -12,7 +12,7 @@
     "loader",
     "closure"
   ],
-  "repository": "mxmul/closure-loader",
+  "repository": "bdb-opensource/closure-global-loader",
   "files": [
     "LICENSE",
     "README.md",
@@ -20,6 +20,7 @@
   ],
   "author": "Steven Weingärtner",
   "contributors": [
+    "Joel-Kornlbuh <kornbluhyoeldev@gmail.com>",
     "Michael van Engelshoven <michael@van-engelshoven.de>",
     "Matthias Harmuth <mcpain83@gmail.com>"
   ],
